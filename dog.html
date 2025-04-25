@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Activity Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better form element appearance */
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            border: 1px solid #d1d5db; /* gray-300 */
+            padding: 0.5rem;
+            border-radius: 0.25rem; /* rounded-md */
+            width: 100%;
+            box-sizing: border-box; /* Include padding and border in element's total width */
+        }
+
+        /* Style for table borders */
+        table, th, td {
+            border-collapse: collapse;
+            border: 1px solid #d1d5db; /* gray-300 */
+        }
+        th, td {
+            padding: 0.75rem; /* p-3 */
+            text-align: left;
+        }
+        th {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+
+    <div class="container mx-auto bg-white rounded-xl shadow-md p-8">
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Dog Daily Activity Tracker</h1>
+
+        <form id="activityForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+            <div>
+                <label for="activityDate" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
+                <input type="date" id="activityDate" required class="focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="activityTime" class="block text-sm font-medium text-gray-700 mb-1">Time:</label>
+                <input type="time" id="activityTime" required class="focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="activityType" class="block text-sm font-medium text-gray-700 mb-1">Activity Type:</label>
+                <select id="activityType" required class="focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select Activity</option>
+                    <option value="walk">Walk</option>
+                    <option value="meal">Mealtime</option>
+                    <option value="sleep">Sleep</option>
+                    <option value="training">Training</option>
+                    <option value="garden">Garden Time</option>
+                    <option value="playtime">Playtime</option>
+                    <option value="rest">Rest/Nap</option>
+                    <option value="enrichment">Enrichment</option>
+                    <option value="stress">Stress/Behavior</option>
+                    <option value="health">General Health</option>
+                    <option value="dog-dog">Dog-Dog Time</option>
+                    <option value="people">People Time</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="activityDetails" class="block text-sm font-medium text-gray-700 mb-1">Activity Details:</label>
+                <textarea id="activityDetails" rows="3" required class="focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+             <div class="md:col-span-2">
+                <label for="generalNotes" class="block text-sm font-medium text-gray-700 mb-1">General Notes for the Day:</label>
+                <textarea id="generalNotes" rows="3" class="focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+
+            <div class="md:col-span-2 text-center">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                    Add Activity
+                </button>
+            </div>
+        </form>
+
+        <div>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Activity Log</h2>
+            <div class="overflow-x-auto">
+                <table id="activityTable" class="min-w-full bg-white rounded-md shadow-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Activity Type</th>
+                            <th>Details</th>
+                            <th>General Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the form and table body
+        const activityForm = document.getElementById('activityForm');
+        const activityTableBody = document.querySelector('#activityTable tbody');
+        const generalNotesTextarea = document.getElementById('generalNotes'); // Get the general notes textarea
+
+        // Add event listener for form submission
+        activityForm.addEventListener('submit', function(event) {
+            // Prevent default form submission
+            event.preventDefault();
+
+            // Get values from the form fields
+            const date = document.getElementById('activityDate').value;
+            const time = document.getElementById('activityTime').value;
+            const activityType = document.getElementById('activityType').value;
+            const activityDetails = document.getElementById('activityDetails').value;
+            const generalNotes = generalNotesTextarea.value; // Get value from general notes
+
+            // Create a new table row
+            const newRow = activityTableBody.insertRow();
+
+            // Create and populate table data cells
+            const dateCell = newRow.insertCell(0);
+            dateCell.textContent = date;
+
+            const timeCell = newRow.insertCell(1);
+            timeCell.textContent = time;
+
+            const typeCell = newRow.insertCell(2);
+            typeCell.textContent = activityType.charAt(0).toUpperCase() + activityType.slice(1).replace(/([A-Z])/g, ' $1').trim(); // Capitalize and add spaces
+
+            const detailsCell = newRow.insertCell(3);
+            detailsCell.textContent = activityDetails;
+
+            const notesCell = newRow.insertCell(4);
+            notesCell.textContent = generalNotes; // Add general notes to the row
+
+            // Clear the form fields after submission, except for general notes
+            document.getElementById('activityDate').value = '';
+            document.getElementById('activityTime').value = '';
+            document.getElementById('activityType').value = '';
+            document.getElementById('activityDetails').value = '';
+            // Do NOT clear generalNotesTextarea here, as it might apply to multiple entries on the same day
+
+            // Optional: Scroll to the bottom of the table to see the new entry
+            activityTableBody.parentElement.scrollTop = activityTableBody.parentElement.scrollHeight;
+        });
+
+         // Optional: Clear general notes when a new day is selected (or manually via a button)
+         // For simplicity, we'll leave it as is, assuming general notes apply to the day until changed.
+         // If you want a clear button for general notes, you can add one and its event listener here.
+
+    </script>
+
+</body>
+</html>
+
