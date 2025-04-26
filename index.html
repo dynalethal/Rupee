@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,18 +28,9 @@
     }
   </style>
 </head>
-
 <body class="bg-gray-100 p-6 font-sans">
-
   <div class="container mx-auto bg-white rounded-xl shadow-md p-8">
     <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Dog Daily Activity Tracker</h1>
-
-    <!-- Search Bar -->
-    <div class="mb-6">
-      <input id="searchInput" type="text" placeholder="Search activities..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-    </div>
-
-    <!-- Form -->
     <form id="activityForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div>
         <label for="activityDate" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
@@ -78,15 +68,12 @@
         <textarea id="generalNotes" rows="3"></textarea>
       </div>
       <div class="md:col-span-2 text-center">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
-          Add Activity
-        </button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md">Add Activity</button>
       </div>
     </form>
-
-    <!-- Table -->
     <div>
       <h2 class="text-xl font-bold mb-4 text-gray-800">Activity Log</h2>
+      <input type="text" id="searchInput" placeholder="Search by activity type or notes..." class="mb-4 p-2 border rounded w-full">
       <div class="overflow-x-auto">
         <table id="activityTable" class="min-w-full bg-white rounded-md shadow-sm">
           <thead>
@@ -96,6 +83,7 @@
               <th>Activity Type</th>
               <th>Details</th>
               <th>General Notes</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -103,74 +91,97 @@
       </div>
     </div>
   </div>
-
   <script>
-    const activityForm = document.getElementById('activityForm');
-    const activityTableBody = document.querySelector('#activityTable tbody');
+    const form = document.getElementById('activityForm');
+    const tableBody = document.querySelector('#activityTable tbody');
+    const notesField = document.getElementById('generalNotes');
     const searchInput = document.getElementById('searchInput');
-    const generalNotesTextarea = document.getElementById('generalNotes');
+    let editRow = null;form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  const date = document.getElementById('activityDate').value;
+  const time = document.getElementById('activityTime').value;
+  const activityType = document.getElementById('activityType').value;
+  const activityDetails = document.getElementById('activityDetails').value;
+  const generalNotes = notesField.value;
+  const rowData = { date, time, activityType, activityDetails, generalNotes };
 
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycbxBhMQ0X524CG0M34cDq3A4cSsyZlXuXzZcFjyCCDOLK1XL7fgrkkGqpx8UixefSQr6Ow/exec'; // <-- Change this to your actual URL!
+  if (editRow) {
+    const id = editRow.dataset.id;
+    rowData.id = id;
+    updateRow(editRow, rowData);
+    sendToGoogleSheet(rowData, true);
+    editRow = null;
+  } else {
+    const id = 'id_' + Date.now();
+    rowData.id = id;
+    addRow(rowData);
+    sendToGoogleSheet(rowData);
+  }
 
-    // Submit new activity
-    activityForm.addEventListener('submit', async function(event) {
-      event.preventDefault();
+  form.reset();
+});
 
-      const date = document.getElementById('activityDate').value;
-      const time = document.getElementById('activityTime').value;
-      const activityType = document.getElementById('activityType').value;
-      const activityDetails = document.getElementById('activityDetails').value;
-      const generalNotes = generalNotesTextarea.value;
+function addRow(data) {
+  const row = tableBody.insertRow();
+  row.dataset.id = data.id;
+  row.innerHTML = `
+    <td>${data.date}</td>
+    <td>${data.time}</td>
+    <td>${formatActivityType(data.activityType)}</td>
+    <td>${data.activityDetails}</td>
+    <td>${data.generalNotes}</td>
+    <td>
+      <button class="text-blue-600 hover:underline" onclick="editRecord(this)">Edit</button>
+    </td>`;
+}
 
-      // Save to Google Sheets
-      await fetch(webAppUrl, {
-        method: 'POST',
-        body: JSON.stringify({ date, time, activityType, activityDetails, generalNotes }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+function updateRow(row, data) {
+  row.innerHTML = `
+    <td>${data.date}</td>
+    <td>${data.time}</td>
+    <td>${formatActivityType(data.activityType)}</td>
+    <td>${data.activityDetails}</td>
+    <td>${data.generalNotes}</td>
+    <td>
+      <button class="text-blue-600 hover:underline" onclick="editRecord(this)">Edit</button>
+    </td>`;
+  row.dataset.id = data.id;
+}
 
-      // Add to table immediately
-      const newRow = activityTableBody.insertRow();
-      newRow.insertCell(0).textContent = date;
-      newRow.insertCell(1).textContent = time;
-      newRow.insertCell(2).textContent = activityType;
-      newRow.insertCell(3).textContent = activityDetails;
-      newRow.insertCell(4).textContent = generalNotes;
+function editRecord(button) {
+  editRow = button.closest('tr');
+  const cells = editRow.children;
+  document.getElementById('activityDate').value = cells[0].textContent;
+  document.getElementById('activityTime').value = cells[1].textContent;
+  document.getElementById('activityType').value = cells[2].textContent.toLowerCase();
+  document.getElementById('activityDetails').value = cells[3].textContent;
+  notesField.value = cells[4].textContent;
+}
 
-      activityForm.reset();
-    });
+function formatActivityType(type) {
+  return type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1').trim();
+}
 
-    // Load existing activities from Sheets
-    async function loadActivities() {
-      const response = await fetch(webAppUrl);
-      const activities = await response.json();
+function sendToGoogleSheet(data, isUpdate = false) {
+  const url = "https://script.google.com/macros/s/AKfycbxBhMQ0X524CG0M34cDq3A4cSsyZlXuXzZcFjyCCDOLK1XL7fgrkkGqpx8UixefSQr6Ow/exec";
+  fetch(url, {
+    method: isUpdate ? "PUT" : "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  }).catch(err => console.error("Google Sheets error:", err));
+}
 
-      activityTableBody.innerHTML = '';
+searchInput.addEventListener('input', function () {
+  const searchTerm = searchInput.value.toLowerCase();
+  Array.from(tableBody.rows).forEach(row => {
+    const match = Array.from(row.cells).some(cell =>
+      cell.textContent.toLowerCase().includes(searchTerm)
+    );
+    row.style.display = match ? '' : 'none';
+  });
+});
 
-      activities.forEach(activity => {
-        const newRow = activityTableBody.insertRow();
-        newRow.insertCell(0).textContent = activity['Date'] || '';
-        newRow.insertCell(1).textContent = activity['Time'] || '';
-        newRow.insertCell(2).textContent = activity['Activity Type'] || '';
-        newRow.insertCell(3).textContent = activity['Activity Details'] || '';
-        newRow.insertCell(4).textContent = activity['General Notes'] || '';
-      });
-    }
-
-    window.addEventListener('DOMContentLoaded', loadActivities);
-
-    // Search functionality
-    searchInput.addEventListener('input', function() {
-      const filter = searchInput.value.toLowerCase();
-      const rows = activityTableBody.getElementsByTagName('tr');
-
-      Array.from(rows).forEach(row => {
-        const cells = row.getElementsByTagName('td');
-        const text = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-        row.style.display = text.includes(filter) ? '' : 'none';
-      });
-    });
   </script>
-
 </body>
 </html>
