@@ -1,0 +1,400 @@
+<!-- --- START OF FILE index.html --- -->
+
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dog Activity Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+      border: 1px solid #d1d5db;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%; /* Ensure table takes full width */
+    }
+    th, td {
+      border: 1px solid #d1d5db;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f3f4f6;
+    }
+    /* Optional: Add hover effect to rows */
+    tbody tr:hover {
+        background-color: #f9fafb;
+    }
+    /* Style for action buttons */
+    .action-buttons button {
+        margin-right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem; /* sm text */
+        border-radius: 0.25rem;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+    .action-buttons .edit-btn {
+        color: #2563eb; /* blue-600 */
+        background-color: transparent;
+    }
+     .action-buttons .edit-btn:hover {
+        text-decoration: underline;
+    }
+     .action-buttons .delete-btn {
+        color: #dc2626; /* red-600 */
+        background-color: transparent;
+    }
+     .action-buttons .delete-btn:hover {
+        text-decoration: underline;
+    }
+     .action-buttons button:last-child {
+        margin-right: 0;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+  <div class="container mx-auto bg-white rounded-xl shadow-md p-8">
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Dog Daily Activity Tracker</h1>
+    <form id="activityForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div>
+        <label for="activityDate" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
+        <input type="date" id="activityDate" required>
+      </div>
+      <div>
+        <label for="activityTime" class="block text-sm font-medium text-gray-700 mb-1">Time:</label>
+        <input type="time" id="activityTime" required>
+      </div>
+      <div class="md:col-span-2">
+        <label for="activityType" class="block text-sm font-medium text-gray-700 mb-1">Activity Type:</label>
+        <select id="activityType" required>
+          <option value="">Select Activity</option>
+          <option value="walk">Walk</option>
+          <option value="meal">Mealtime</option>
+          <option value="sleep">Sleep</option>
+          <option value="training">Training</option>
+          <option value="garden">Garden Time</option>
+          <option value="playtime">Playtime</option>
+          <option value="rest">Rest/Nap</option>
+          <option value="enrichment">Enrichment</option>
+          <option value="stress">Stress/Behavior</option>
+          <option value="health">General Health</option>
+          <option value="dog-dog">Dog-Dog Time</option>
+          <option value="people">People Time</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label for="activityDetails" class="block text-sm font-medium text-gray-700 mb-1">Activity Details:</label>
+        <textarea id="activityDetails" rows="3" required></textarea>
+      </div>
+      <div class="md:col-span-2">
+        <label for="generalNotes" class="block text-sm font-medium text-gray-700 mb-1">General Notes for the Day:</label>
+        <textarea id="generalNotes" rows="3"></textarea>
+      </div>
+      <div class="md:col-span-2 text-center flex justify-center gap-4">
+        <button type="submit" id="submitButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md">Add Activity</button>
+        <button type="button" id="cancelEditButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-md hidden" onclick="cancelEdit()">Cancel Edit</button>
+      </div>
+    </form>
+    <div>
+      <h2 class="text-xl font-bold mb-4 text-gray-800">Activity Log</h2>
+      <input type="text" id="searchInput" placeholder="Search by activity type or notes..." class="mb-4 p-2 border rounded w-full">
+      <div class="overflow-x-auto">
+        <table id="activityTable" class="min-w-full bg-white rounded-md shadow-sm">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Activity Type</th>
+              <th>Details</th>
+              <th>General Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Activity rows will be added here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Replace with the Web App URL obtained after deploying your Apps Script
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzzUr14pcLcjJxZ9KykmyC945FsJ9AS6ilpdyZ2babllRw7koQVixrCGJUhZZZHaTfv/exec";
+
+    const form = document.getElementById('activityForm');
+    const tableBody = document.querySelector('#activityTable tbody');
+    const notesField = document.getElementById('generalNotes');
+    const searchInput = document.getElementById('searchInput');
+    const submitButton = document.getElementById('submitButton');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+
+    let editRow = null; // Stores the table row being edited
+
+    // --- Event Listeners ---
+
+    // Load data when the page is fully loaded
+    document.addEventListener('DOMContentLoaded', loadActivities);
+
+    // Handle form submission (Add or Update)
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const date = document.getElementById('activityDate').value;
+      const time = document.getElementById('activityTime').value;
+      const activityType = document.getElementById('activityType').value;
+      const activityDetails = document.getElementById('activityDetails').value;
+      const generalNotes = notesField.value;
+
+      let rowData = { date, time, activityType, activityDetails, generalNotes };
+
+      if (editRow) {
+        // Update existing record
+        const id = editRow.dataset.id;
+        rowData.id = id;
+        sendToGoogleSheet(rowData, 'PUT');
+      } else {
+        // Add new record
+        const id = 'id_' + Date.now(); // Generate unique ID client-side
+        rowData.id = id;
+        sendToGoogleSheet(rowData, 'POST');
+      }
+    });
+
+    // Handle search input
+    searchInput.addEventListener('input', function () {
+      const searchTerm = searchInput.value.toLowerCase();
+      Array.from(tableBody.rows).forEach(row => {
+        // Search across all cells except the Actions column
+        const match = Array.from(row.cells).slice(0, -1).some(cell =>
+          cell.textContent.toLowerCase().includes(searchTerm)
+        );
+        row.style.display = match ? '' : 'none';
+      });
+    });
+
+    // --- Data Fetching and Sending ---
+
+    // Load activities from Google Sheet on page load
+    async function loadActivities() {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'GET',
+          // mode: 'no-cors' // REMOVE no-cors to read response
+        });
+
+        if (!response.ok) {
+             // Attempt to read error body if available, otherwise use status text
+             const errorBody = await response.text(); // Read as text first
+             let errorMessage = `HTTP error! status: ${response.status}`;
+             try {
+                 const jsonError = JSON.parse(errorBody);
+                 errorMessage = jsonError.error || errorMessage;
+             } catch (e) {
+                 errorMessage = `${errorMessage} - Response: ${errorBody}`;
+             }
+             throw new Error(errorMessage);
+        }
+
+        const data = await response.json(); // Parse JSON response
+
+        // Clear existing table rows (if any)
+        tableBody.innerHTML = '';
+
+        // Add each activity to the table
+        data.forEach(activity => addRow(activity));
+
+      } catch (error) {
+        console.error("Error loading activities:", error);
+        // Optionally display an error message to the user
+        alert("Failed to load activities. Please check the console for details.");
+      }
+    }
+
+
+    // Send data (Add or Update) to Google Sheet
+    async function sendToGoogleSheet(data, method) {
+      try {
+        const response = await fetch(WEB_APP_URL + (method === 'DELETE' ? `?id=${data.id}` : ''), {
+          method: method, // 'POST', 'PUT', or 'DELETE'
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: method !== 'GET' && method !== 'DELETE' ? JSON.stringify(data) : null, // Only send body for POST/PUT
+          // mode: 'no-cors' // REMOVE no-cors to read response
+        });
+
+        // Check for successful response (status code 2xx)
+         if (!response.ok) {
+             const errorBody = await response.text();
+             let errorMessage = `HTTP error! status: ${response.status}`;
+             try {
+                 const jsonError = JSON.parse(errorBody);
+                 errorMessage = jsonError.error || errorMessage;
+             } catch (e) {
+                 errorMessage = `${errorMessage} - Response: ${errorBody}`;
+             }
+             throw new Error(errorMessage);
+         }
+
+        const result = await response.json(); // Parse JSON response from Apps Script
+
+        if (result.result === 'success' || result.result === 'updated') {
+          console.log(`${method} successful:`, result);
+          if (method === 'POST') {
+             // Add the new row to the table after successful POST
+             addRow(data); // Use the data object with the client-generated ID
+          } else if (method === 'PUT' && editRow) {
+             // Update the existing row in the table after successful PUT
+             updateRow(editRow, data);
+             cancelEdit(); // Exit edit mode
+          } else if (method === 'DELETE') {
+             // Row already removed in deleteRecord function for immediate feedback
+             console.log("Row deleted:", data.id);
+          }
+           // Clear form only after successful submission (Add or Update)
+           if (method === 'POST' || method === 'PUT') {
+             form.reset();
+             notesField.value = ''; // Ensure textarea is cleared
+           }
+
+        } else if (result.result === 'not_found') {
+            console.warn("Record not found for update/delete:", data.id);
+            alert(`Record with ID ${data.id} not found.`);
+             if (method === 'PUT' && editRow) {
+                 cancelEdit(); // Exit edit mode if not found during update
+             }
+        } else {
+            // Handle other potential results or unexpected responses
+            console.error("Unexpected result from script:", result);
+            alert(`Operation failed with unexpected result: ${JSON.stringify(result)}`);
+             if (method === 'PUT' && editRow) {
+                 cancelEdit(); // Exit edit mode on unexpected result
+             }
+        }
+
+      } catch (error) {
+        console.error(`Error sending data (${method}):`, error);
+        alert(`Failed to perform operation (${method}). Please check the console for details.`);
+         if (method === 'PUT' && editRow) {
+             cancelEdit(); // Exit edit mode on error
+         }
+      }
+    }
+
+    // --- Table Manipulation ---
+
+    // Add a new row to the table
+    function addRow(data) {
+      const row = tableBody.insertRow();
+      row.dataset.id = data.id; // Store the unique ID on the row element
+      row.innerHTML = `
+        <td>${data.date}</td>
+        <td>${data.time}</td>
+        <td>${formatActivityType(data.activityType)}</td>
+        <td>${escapeHTML(data.activityDetails)}</td> <!-- Escape details -->
+        <td>${escapeHTML(data.generalNotes)}</td> <!-- Escape notes -->
+        <td class="action-buttons">
+          <button class="edit-btn" onclick="editRecord(this)">Edit</button>
+          <button class="delete-btn" onclick="deleteRecord(this)">Delete</button>
+        </td>`;
+    }
+
+    // Update an existing row in the table
+    function updateRow(row, data) {
+       // Update individual cells instead of replacing innerHTML
+       row.cells[0].textContent = data.date;
+       row.cells[1].textContent = data.time;
+       row.cells[2].textContent = formatActivityType(data.activityType);
+       row.cells[3].textContent = escapeHTML(data.activityDetails); // Escape details
+       row.cells[4].textContent = escapeHTML(data.generalNotes); // Escape notes
+       // Actions cell remains the same
+       row.dataset.id = data.id; // Ensure ID is correct (should be already)
+    }
+
+    // --- Edit and Delete Actions ---
+
+    // Populate form for editing
+    function editRecord(button) {
+      editRow = button.closest('tr');
+      const cells = editRow.children;
+
+      // Populate form fields
+      document.getElementById('activityDate').value = cells[0].textContent;
+      document.getElementById('activityTime').value = cells[1].textContent;
+      // Find the option by its value (lowercase)
+      const activityTypeSelect = document.getElementById('activityType');
+      const formattedType = cells[2].textContent.trim().toLowerCase().replace(/\s/g, ''); // Convert "Garden Time" to "gardentime" etc.
+      let matchedOption = Array.from(activityTypeSelect.options).find(option => option.value === formattedType);
+      if (!matchedOption) {
+           // Handle cases where formatting might not match exactly, try looser match
+           matchedOption = Array.from(activityTypeSelect.options).find(option => cells[2].textContent.toLowerCase().includes(option.value));
+      }
+       activityTypeSelect.value = matchedOption ? matchedOption.value : ''; // Set value or default
+
+      document.getElementById('activityDetails').value = cells[3].textContent;
+      notesField.value = cells[4].textContent;
+
+      // Change button text and show cancel button
+      submitButton.textContent = 'Update Activity';
+      cancelEditButton.classList.remove('hidden');
+    }
+
+    // Cancel editing mode
+    function cancelEdit() {
+      editRow = null;
+      form.reset();
+      notesField.value = ''; // Ensure textarea is cleared
+      submitButton.textContent = 'Add Activity';
+      cancelEditButton.classList.add('hidden');
+    }
+
+    // Delete a record
+    function deleteRecord(button) {
+      const rowToDelete = button.closest('tr');
+      const idToDelete = rowToDelete.dataset.id;
+
+      if (confirm('Are you sure you want to delete this activity?')) {
+        // Optimistically remove row from UI
+        rowToDelete.remove();
+        // Send delete request to backend
+        sendToGoogleSheet({ id: idToDelete }, 'DELETE');
+        // If the deleted row was the one being edited, cancel edit mode
+        if (editRow === rowToDelete) {
+            cancelEdit();
+        }
+      }
+    }
+
+    // --- Utility Functions ---
+
+    // Format activity type for display (e.g., "walk" -> "Walk", "garden" -> "Garden Time")
+    function formatActivityType(type) {
+      // Find the option text based on the value
+      const activityTypeSelect = document.getElementById('activityType');
+      const option = Array.from(activityTypeSelect.options).find(opt => opt.value === type);
+      return option ? option.textContent : type; // Return text if found, otherwise original value
+    }
+
+    // Basic HTML escaping to prevent issues if user enters HTML/script tags in textareas
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+
+  </script>
+</body>
+</html>
+<!-- --- END OF FILE index.html --- -->
