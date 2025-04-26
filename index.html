@@ -167,7 +167,7 @@
         // Add new record
         const id = 'id_' + Date.now(); // Generate unique ID client-side
         rowData.id = id;
-        sendToGoogleSheet(rowData, 'PUT');
+        sendToGoogleSheet(rowData, 'POST');
       }
     });
 
@@ -190,7 +190,7 @@
       try {
         const response = await fetch(WEB_APP_URL, {
           method: 'GET',
-          // mode: 'no-cors' // REMOVE no-cors to read response
+          mode: 'no-cors' // REMOVE no-cors to read response
         });
 
         if (!response.ok) {
@@ -231,7 +231,7 @@
             'Content-Type': 'application/json',
           },
           body: method !== 'GET' && method !== 'DELETE' ? JSON.stringify(data) : null, // Only send body for POST/PUT
-          // mode: 'no-cors' // REMOVE no-cors to read response
+          mode: 'no-cors' // REMOVE no-cors to read response
         });
 
         // Check for successful response (status code 2xx)
