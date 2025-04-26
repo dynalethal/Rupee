@@ -1,0 +1,28 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Entry</title>
+ </head>
+ <body>
+  <h1>Edit Dog Activity Entry</h1>
+  <form action="/edit/{{ index }}" method="post">
+  <label for="Day & Date">Day & Date:</label><br>
+  <input type="text" id="Day & Date" name="Day & Date" value="{{ entry['Day & Date'] }}" required><br><br>
+  <label for="Time">Time:</label><br>
+  <input type="text" id="Time" name="Time" value="{{ entry['Time'] }}" required><br><br>
+  <label for="Activity or Record of Information">Activity or Record of Information:</label><br>
+  <textarea id="Activity or Record of Information" name="Activity or Record of Information" rows="4" cols="50" required>{{ entry['Activity or Record of Information'] }}</textarea><br><br>
+  <label for="Include">Include:</label><br>
+  <input type="text" id="Include" name="Include" value="{{ entry['Include'] }}"><br><br>
+  <label for="Any Problems/TRAINING">Any Problems/TRAINING:</label><br>
+  <textarea id="Any Problems/TRAINING" name="Any Problems/TRAINING" rows="4" cols="50">{{ entry['Any Problems/TRAINING'] }}</textarea><br><br>
+  <label for="Any other notes for the day?">Any other notes for the day?:</label><br>
+  <textarea id="Any other notes for the day?" name="Any other notes for the day?" rows="4" cols="50">{{ entry['Any other notes for the day?'] }}</textarea><br><br>
+  <input type="submit" value="Update">
+  </form>
+  <br>
+  <a href="/">Back to Log</a>
+ </body>
+ </html>
