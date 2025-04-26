@@ -7,7 +7,7 @@
  
 
  app = Flask(__name__)
- app.secret_key = "your_secret_key"  # Change this to a random string!
+ app.secret_key = "6272bob677274"  # Change this to a random string!
  
 
  # --- Google Sheets API Setup ---
@@ -48,7 +48,7 @@
   service = get_sheets_service()
   if not service:
   return []
-  SHEET_ID = 'YOUR_SHEET_ID'  # Replace with your Google Sheet ID
+  SHEET_ID = '1S2kqkC4Plllbwi3Mt5QQR0Wy5cGGb7oEupiXqcZU2Zg'  # Replace with your Google Sheet ID
   RANGE_NAME = 'Sheet1'  # Replace with the name of your sheet
   results = service.spreadsheets().values().get(spreadsheetId=SHEET_ID, range=RANGE_NAME).execute()
   values = results.get('values', [])
@@ -69,7 +69,7 @@
   service = get_sheets_service()
   if not service:
   return
-  SHEET_ID = 'YOUR_SHEET_ID'
+  SHEET_ID = '1S2kqkC4Plllbwi3Mt5QQR0Wy5cGGb7oEupiXqcZU2Zg'
   RANGE_NAME = 'Sheet1'
   values = [list(data.values())]
   body = {'values': values}
@@ -83,7 +83,7 @@
   service = get_sheets_service()
   if not service:
   return
-  SHEET_ID = 'YOUR_SHEET_ID'
+  SHEET_ID = '1S2kqkC4Plllbwi3Mt5QQR0Wy5cGGb7oEupiXqcZU2Zg'
   RANGE_NAME = f'Sheet1!A{index}:F{index}'  # Assuming 6 columns (A to F)
   values = [list(data.values())]
   body = {'values': values}
