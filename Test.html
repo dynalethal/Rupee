@@ -128,6 +128,7 @@
             // Create a new table row
             const newRow = activityTableBody.insertRow();
 
+
             // Create and populate table data cells
             const dateCell = newRow.insertCell(0);
             dateCell.textContent = date;
@@ -144,7 +145,16 @@
             const notesCell = newRow.insertCell(4);
             notesCell.textContent = generalNotes; // Add general notes to the row
 
-            // Clear the form fields after submission, except for general notes
+const data = {
+    date,
+    time,
+    activityType,
+    activityDetails,
+    generalNotes
+};
+sendToGoogleSheet(data);
+            
+// Clear the form fields after submission, except for general notes
             document.getElementById('activityDate').value = '';
             document.getElementById('activityTime').value = '';
             document.getElementById('activityType').value = '';
@@ -159,6 +169,16 @@
          // For simplicity, we'll leave it as is, assuming general notes apply to the day until changed.
          // If you want a clear button for general notes, you can add one and its event listener here.
 
+function sendToGoogleSheet(data) {
+    fetch("Yhttps://script.google.com/macros/s/AKfycbxBhMQ0X524CG0M34cDq3A4cSsyZlXuXzZcFjyCCDOLK1XL7fgrkkGqpx8UixefSQr6Ow/exec", {
+        method: "POST",
+        mode: "no-cors", // Required for anonymous POST
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    }).catch(error => console.error("Error sending data to Google Sheet:", error));
+}
     </script>
 
 </body>
