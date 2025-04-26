@@ -144,15 +144,15 @@
 
             const notesCell = newRow.insertCell(4);
             notesCell.textContent = generalNotes; // Add general notes to the row
-
-const data = {
-    date,
-    time,
-    activityType,
-    activityDetails,
-    generalNotes
-};
-sendToGoogleSheet(data);
+            
+            const data = {
+                date,
+                time,
+                activityType,
+                activityDetails,
+                generalNotes
+            };
+            sendToGoogleSheet(data);
             
 // Clear the form fields after submission, except for general notes
             document.getElementById('activityDate').value = '';
