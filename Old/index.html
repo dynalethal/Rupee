@@ -163,7 +163,7 @@ function formatActivityType(type) {
 }
 
 function sendToGoogleSheet(data, isUpdate = false) {
-  const url = "https://script.google.com/macros/s/AKfycbzOy-9Wlinenp0EV75MiQ_LG2FL9abrW6ZMD5N2w7UDxCZcU97UZIiMz-ASp50aixry/exec";
+  const url = "https://script.google.com/macros/s/AKfycbwu4fRMTpy00W9Xbi4vV-gistcaWkDJMiQhVQ4ksyW6GN-zRowkth1Mw3btrUU6qets/exec";
   fetch(url, {
     method: isUpdate ? "PUT" : "POST",
     mode: "no-cors",
