@@ -7,8 +7,8 @@
   <title>Dog Activity Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /*input[type="date"],
-    input[type="time"],*/
+    input[type="date"],
+    input[type="time"],
     select,
     textarea {
       border: 1px solid #d1d5db;
@@ -167,7 +167,7 @@
         // Add new record
         const id = 'id_' + Date.now(); // Generate unique ID client-side
         rowData.id = id;
-        sendToGoogleSheet(rowData, 'POST');
+        sendToGoogleSheet(rowData, 'PUT');
       }
     });
 
