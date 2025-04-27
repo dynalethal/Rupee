@@ -166,7 +166,7 @@ function formatActivityType(type) {
 function sendToGoogleSheet(data, isUpdate = false) {
   fetch(url, {
     method: isUpdate ? "PUT" : "POST",
-    mode: "no-cors",
+  /*  mode: "no-cors",*/
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   }).catch(err => console.error("Google Sheets error:", err));
